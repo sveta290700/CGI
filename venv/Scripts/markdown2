@@ -1,4 +1,4 @@
-#!D:\CGI\venv2\Scripts\python.exe
+#!D:\CGI\venv\Scripts\python.exe
 
 import sys
 from os.path import join, dirname, exists
