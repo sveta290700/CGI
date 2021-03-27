@@ -37,13 +37,14 @@ class Wall:
             with open(self.COOKIES, 'w', encoding='utf-8') as f:
                 json.dump({}, f)
 
-    def register(self, user, password, avatar):
+    def register(self, user, avatar):
         """Регистриует пользователя. Возвращает True при успешной регистрации"""
         if self.find(user):
             return False  # Такой пользователь существует
         with open(self.USERS, 'r', encoding='utf-8') as f:
             users = json.load(f)
-        users[user] = {'password': password, 'avat': avatar}
+        '''не убрал поле для пароля, потому что мне лень :)'''
+        users[user] = {'password': '', 'avat': avatar}
         with open(self.USERS, 'w', encoding='utf-8') as f:
             json.dump(users, f)
         return True
@@ -89,16 +90,26 @@ class Wall:
         with open(self.WALL, 'w', encoding='utf-8') as f:
             json.dump(wall, f)
 
+    def get_html_avatar(self, user):
+        photo = md.convert('![avatar](' + self.get_avatar(user) + ')')
+        photo = '<img style="max-width:5rem" ' + photo[8:-5]
+        return photo
+
     def html_list(self):
         """Список постов для отображения на странице"""
         with open(self.WALL, 'r', encoding='utf-8') as f:
             wall = json.load(f)
         posts = []
         for post in wall['posts']:
+            name = '<strong style="margin: 0;position: absolute;transform: translateX(1rem) translateY(50%);"' + md.convert('**' + post['user'] + ':** ')[10:-5]
             if 'avatar' in post:
-                content = md.convert('![avatar](' + post['avatar'] + ')**' + post['user'] + '**: ') + md.convert(
+                photo = md.convert('![avatar](' + post['avatar'] + ')')
+                photo = '<img style="max-width:5rem" ' + photo[8:-5]
+
+                content = photo + name + md.convert(
                     post['text'])
             else:
-                content = md.convert('**' + post['user'] + '**: ') + md.convert(post['text'])
+                content = md.convert('**' + post['user'] + ':** ')[3:-5] + md.convert(post['text'])
             posts.append(content)
-        return ''.join(posts)
+            main = '<hr class="solid">'.join(posts)
+        return main

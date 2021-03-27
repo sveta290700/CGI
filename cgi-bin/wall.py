@@ -12,36 +12,32 @@ wall = Wall()
 cookie = http.cookies.SimpleCookie(os.environ.get("HTTP_COOKIE"))
 session = cookie.get("session")
 if session is not None:
-    session = session.value
+  session = session.value
 user = wall.find_cookie(session)  # Ищем пользователя по переданной куке
 
 form = cgi.FieldStorage()
 action = form.getfirst("action", "")
 
 if action == "publish":
-    text = form.getfirst("text", "")
-    text = html.escape(text)
-    if len(text) > 0:
-        if text and user is not None:
-            wall.publish(user, text, wall.get_avatar(user))
-    else:
-        action = "login"
+  text = form.getfirst("text", "")
+  text = html.escape(text)
+  if len(text) > 0:
+    if text and user is not None:
+      wall.publish(user, text, wall.get_avatar(user))
+  else:
+    action = "login"
 if action == "login":
-    login = form.getfirst("login", "")
-    login = html.escape(login)
-    password = form.getfirst("password", "")
-    password = html.escape(password)
-    avatar = form.getfirst("avatar", "")
-    avatar = html.escape(avatar)
-    if wall.find(login, password):
-        cookie = wall.set_cookie(login)
-        print('Set-cookie: session={}'.format(cookie))
-    elif wall.find(login):
-        pass  # А надо бы предупреждение выдать
-    elif len(login) > 0 and len(password) > 0 and len(avatar) > 0:
-        wall.register(login, password, avatar)
-        cookie = wall.set_cookie(login)
-        print('Set-cookie: session={}'.format(cookie))
+  login = form.getfirst("login", "")
+  login = html.escape(login)
+  avatar = form.getfirst("avatar", "")
+  avatar = html.escape(avatar)
+  if len(login) > 0 and len(avatar) > 0:
+    wall.register(login, avatar)
+    cookie = wall.set_cookie(login)
+    print('Set-cookie: session={}'.format(cookie))
+  elif wall.find(login):
+    cookie = wall.set_cookie(login)
+    print('Set-cookie: session={}'.format(cookie))
 
 pattern = '''
 <!DOCTYPE HTML>
@@ -55,28 +51,13 @@ pattern = '''
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Форма логина и регистрации. При вводе несуществующего имени зарегистрируется новый пользователь.
+    <main style="width: 70%;transform: translate(20%, 1rem)">
     <form class="mew-form" action="/cgi-bin/wall.py">
-        Логин: <input type="text" name="login">
-        Пароль: <input type="password" name="password">
-        Аватар: <input type="text" name="avatar">
-        <input type="hidden" name="action" value="login">
-        <input type="submit">
-    </form>
-    //-->
-    
-    <main>
-    <form class="mew-form" action="/cgi-bin/wall.py">
-      <div class="error-message">
-      </div>
-      <label for="name">Name</label>
-      <input class="u-full-width" type="text" id="login" name="login", value={val}>
-      <label for="name">Password</label>
-      <input class="u-full-width" type="password" id="password" name="password">
-      <label for="name">Avatar</label>
-      <input class="u-full-width" type="text" id="avatar" name="avatar">
+      
+      {login}
+      
       {publish}
-      <input type="submit" class="button-primary">
+      <input type="submit" class="button-primary" value="{form}">
     </form>
     
     <div class="mews">
@@ -90,9 +71,32 @@ pattern = '''
 </html>
 '''
 
+if len(cookie) > 1: # just a piece of shit statement,
+  # because there is no way to write it otherwise classes in python suck
+  user = wall.find_cookie(cookie)
+
 if user is not None:
-    pub = '''
+  form = 'Send'
+  avatar = '<div class="one column">' + wall.get_html_avatar(user) + '</div>'
+  login = '''
+  <div class="row">
+  <div class="ten columns">
+  <label for="name">Logged in as:</label>
+  </div>
+  <div class="two columns">
+  <button class="button" onclick="logout()" style="color: #FFF;background-color:#ff6060;border-color:#ff6060;transform: translateX(10%)">Log out</button>
+  </div>
+  </div>
+  <div class="row" style="display: flex;align-items: center">''' + avatar + '''
+  <div class="one-half column">
+      <h5 style="transform: translateX(0rem)" class="u-full-width">''' + user + '''</h5></div></div>'''
+  pub = '''
     <script>
+        function logout() {
+          document.cookie = "session= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+          return false;
+        }
+    
         function add(str) {
             document.getElementById("content").value += str
         }
@@ -113,16 +117,29 @@ if user is not None:
     <input type="hidden" name="action" value="publish">
     '''
 else:
-    pub = '''
+  form = 'Sign In'
+  avatar_field = '''
+  <div class="one-half column">
+  <label for="avatar">Avatar</label>
+      <input class="u-full-width" type="text" id="avatar" name="avatar">
+      </div>
+  '''
+  login = '''
+  <div class="row" style="display: flex;align-items: center">
+  <div class="one-half column">
+      <label for="name">Name</label>
+      <input class="u-full-width" type="text" id="login" name="login"></div>
+  ''' + avatar_field + '''</div>'''
+  pub = '''
      <input type="hidden" name="action" value="login">
     '''
 
 print('Content-type: text/html\n')
 
-cookie = http.cookies.SimpleCookie(os.environ.get("HTTP_COOKIE"))
-session = cookie.get("session")
-if session is not None:
-    session = session.value
-user = wall.find_cookie(session)
 posts = wall.html_list()
-print(pattern.format(posts=posts, publish=pub, val=user))
+res = pattern.format(posts=posts,
+                     publish=pub,
+                     form=form,
+                     login=login,
+                     )
+print(res)
