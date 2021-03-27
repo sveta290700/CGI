@@ -45,14 +45,14 @@ pattern = '''
 <head>
 <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Twitter</title>
+  <title>Smirker 😏</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <main style="width: 70%;transform: translate(20%, 1rem)">
-    <form class="mew-form" action="/cgi-bin/wall.py">
+    <form class="mirk-form" action="/cgi-bin/wall.py">
       
       {login}
       
@@ -60,7 +60,7 @@ pattern = '''
       <input type="submit" class="button-primary" value="{form}">
     </form>
     
-    <div class="mews">
+    <div class="smirks">
     
         {posts}
     
@@ -76,15 +76,15 @@ if len(cookie) > 1: # just a piece of shit statement,
   user = wall.find_cookie(cookie)
 
 if user is not None:
-  form = 'Send'
+  form = 'Smirk 😏'
   avatar = '<div class="one column">' + wall.get_html_avatar(user) + '</div>'
   login = '''
   <div class="row">
   <div class="ten columns">
-  <label for="name">Logged in as:</label>
+  <label for="name">Smirked in as:</label>
   </div>
   <div class="two columns">
-  <button class="button" onclick="logout()" style="color: #FFF;background-color:#ff6060;border-color:#ff6060;transform: translateX(10%)">Log out</button>
+  <button class="button" onclick="logout()" style="color: #FFF;background-color:#ff6060;border-color:#ff6060;transform: translateX(10%)">Smirk out</button>
   </div>
   </div>
   <div class="row" style="display: flex;align-items: center">''' + avatar + '''
@@ -117,7 +117,7 @@ if user is not None:
     <input type="hidden" name="action" value="publish">
     '''
 else:
-  form = 'Sign In'
+  form = 'Get smirked 😏'
   avatar_field = '''
   <div class="one-half column">
   <label for="avatar">Avatar</label>
